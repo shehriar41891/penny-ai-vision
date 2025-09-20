@@ -1,98 +1,135 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { StockScreener } from "./StockScreener";
-import { AIAnalysisPanel } from "./AIAnalysisPanel";
-import { TradingFilters } from "./TradingFilters";
-import { NewsPanel } from "./NewsPanel";
-import { RefreshCw, TrendingUp, Brain, Filter } from "lucide-react";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { StockScreener } from './StockScreener';
+import { AIAnalysisPanel } from './AIAnalysisPanel';
+import { NewsPanel } from './NewsPanel';
+import { TradingFilters } from './TradingFilters';
+import { Activity, TrendingUp, Brain, Newspaper, RefreshCcw } from 'lucide-react';
+import { useStockData } from '@/hooks/useStockData';
+import { useNewsData } from '@/hooks/useNewsData';
+import { useToast } from '@/hooks/use-toast';
 
 export const TradingDashboard = () => {
-  const [isScanning, setIsScanning] = useState(false);
-  const [activeTab, setActiveTab] = useState("screener");
+  const { stocks, loading: stocksLoading, refetch: refetchStocks } = useStockData();
+  const { news, loading: newsLoading, refetch: refetchNews } = useNewsData();
+  const [selectedStock, setSelectedStock] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const handleScan = () => {
-    setIsScanning(true);
-    // Simulate AI scanning process
-    setTimeout(() => setIsScanning(false), 3000);
+  const handleRefreshAll = async () => {
+    toast({
+      title: "Refreshing Data",
+      description: "Updating all market data...",
+    });
+    
+    await Promise.all([refetchStocks(), refetchNews()]);
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-ai-glow bg-clip-text text-transparent">
-              AI Trading Terminal
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              AI-powered stock analysis and trading recommendations
-            </p>
-          </div>
-          <Button 
-            onClick={handleScan}
-            disabled={isScanning}
-            className="ai-glow bg-gradient-to-r from-primary to-ai-glow hover:opacity-90 transition-all duration-300"
-          >
-            <Brain className="w-4 h-4 mr-2" />
-            {isScanning ? "Scanning..." : "AI Scan"}
-            {isScanning && <RefreshCw className="w-4 h-4 ml-2 animate-spin" />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="flex space-x-1 mb-6 bg-secondary/50 p-1 rounded-lg backdrop-blur-sm">
-        {[
-          { id: "screener", label: "Stock Screener", icon: TrendingUp },
-          { id: "ai", label: "AI Analysis", icon: Brain },
-          { id: "filters", label: "Filters", icon: Filter },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center px-4 py-2 rounded-md transition-all duration-200 ${
-              activeTab === tab.id
-                ? "bg-primary text-primary-foreground shadow-lg"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-            }`}
-          >
-            <tab.icon className="w-4 h-4 mr-2" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Primary Panel */}
-        <div className="lg:col-span-2">
-          {activeTab === "screener" && <StockScreener isScanning={isScanning} />}
-          {activeTab === "ai" && <AIAnalysisPanel />}
-          {activeTab === "filters" && <TradingFilters />}
-        </div>
-
-        {/* Side Panel */}
-        <div className="space-y-6">
-          <NewsPanel />
-          {activeTab === "screener" && (
-            <Card className="p-6 trading-card-glow">
-              <h3 className="text-lg font-semibold mb-4 text-ai-glow">AI Insights</h3>
-              <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-secondary/30 border border-bullish/20">
-                  <p className="text-sm text-bullish font-medium">Strong Buy Signal</p>
-                  <p className="text-xs text-muted-foreground">3 stocks match momentum criteria</p>
-                </div>
-                <div className="p-3 rounded-lg bg-secondary/30 border border-ai-glow/20">
-                  <p className="text-sm text-ai-glow font-medium">Pattern Recognition</p>
-                  <p className="text-xs text-muted-foreground">Bullish flags detected in 2 charts</p>
-                </div>
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card shadow-sm">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <Activity className="w-8 h-8 text-primary" />
               </div>
-            </Card>
-          )}
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">AI Trading Hub</h1>
+                <p className="text-sm text-muted-foreground">Professional momentum trading platform</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button 
+                onClick={handleRefreshAll}
+                disabled={stocksLoading || newsLoading}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <RefreshCcw className={`w-4 h-4 ${(stocksLoading || newsLoading) ? 'animate-spin' : ''}`} />
+                Refresh Data
+              </Button>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span>Market Open</span>
+                </div>
+                <div>Last Updated: {new Date().toLocaleTimeString()}</div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </header>
+
+      <main className="container mx-auto px-6 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Stocks</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-500">{stocks.length}</div>
+              <p className="text-xs text-muted-foreground">Momentum stocks under $5</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">AI Signals</CardTitle>
+              <Brain className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-500">
+                {stocks.filter(s => s.recommendation === 'BUY').length}
+              </div>
+              <p className="text-xs text-muted-foreground">Strong buy signals</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg. Volume</CardTitle>
+              <Activity className="h-4 w-4 text-purple-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-500">
+                {stocks.length > 0 ? (stocks.reduce((acc, s) => acc + s.relativeVolume, 0) / stocks.length).toFixed(1) + 'x' : '0x'}
+              </div>
+              <p className="text-xs text-muted-foreground">Above average</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-orange-500/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">News Catalysts</CardTitle>
+              <Newspaper className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-500">{news.length}</div>
+              <p className="text-xs text-muted-foreground">High impact events</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2 space-y-6">
+            <TradingFilters />
+            <StockScreener 
+              stocks={stocks} 
+              loading={stocksLoading} 
+              onStockSelect={setSelectedStock}
+              selectedStock={selectedStock}
+            />
+          </div>
+          
+          <div className="space-y-6">
+            <AIAnalysisPanel selectedStock={selectedStock} />
+            <NewsPanel news={news} loading={newsLoading} />
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
