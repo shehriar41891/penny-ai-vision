@@ -30,10 +30,11 @@ export const useStockData = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/functions/v1/stock-screener', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stock-screener`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
       });
 
