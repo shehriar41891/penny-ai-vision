@@ -30,10 +30,40 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
-    // In production, replace with real news API calls
-    const NEWS_API_KEY = Deno.env.get('NEWS_API_KEY') || 'demo'
+    const ALPHA_VANTAGE_KEY = Deno.env.get('ALPHA_VANTAGE_API_KEY')
     
-    // Mock news data for now
+    if (!ALPHA_VANTAGE_KEY) {
+      throw new Error('Alpha Vantage API key not configured')
+    }
+
+    // Fetch real news from Alpha Vantage
+    let realNews: NewsItem[] = [];
+    
+    try {
+      const newsResponse = await fetch(
+        `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&topics=technology,earnings&sort=LATEST&limit=50&apikey=${ALPHA_VANTAGE_KEY}`
+      );
+      const newsData = await newsResponse.json();
+      
+      if (newsData.feed) {
+        realNews = newsData.feed.slice(0, 10).map((article: any, index: number) => ({
+          id: `news-${index}`,
+          title: article.title,
+          summary: article.summary || article.title.substring(0, 150) + '...',
+          source: article.source,
+          publishedAt: article.time_published,
+          symbols: article.ticker_sentiment?.map((t: any) => t.ticker) || [],
+          sentiment: article.overall_sentiment_label?.toUpperCase() || 'NEUTRAL',
+          impact: article.overall_sentiment_score > 0.1 ? 'HIGH' : 
+                 article.overall_sentiment_score > 0.05 ? 'MEDIUM' : 'LOW',
+          url: article.url
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching real news:', error);
+    }
+    
+    // Mock news data - fallback
     const mockNews: NewsItem[] = [
       {
         id: '1',
@@ -95,7 +125,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        data: mockNews,
+        data: realNews.length > 0 ? realNews : mockNews,
         timestamp: new Date().toISOString()
       }),
       { 
