@@ -6,8 +6,13 @@ export class AlphaVantageService {
   private lastCallTime = 0;
 
   constructor() {
-    // For production, you should set this in environment variables
-    this.apiKey = 'RIBXT9XJZZ52E0RE'; // Demo key - replace with your own
+    // Get your own free API key from https://www.alphavantage.co/support/#api-key
+    this.apiKey = 'YOUR_API_KEY_HERE'; // Replace with your Alpha Vantage API key
+    
+    if (this.apiKey === 'YOUR_API_KEY_HERE') {
+      console.warn('⚠️ Please replace YOUR_API_KEY_HERE with your actual Alpha Vantage API key');
+      console.warn('Get a free key at: https://www.alphavantage.co/support/#api-key');
+    }
   }
 
   private async waitForRateLimit() {
