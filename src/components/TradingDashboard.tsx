@@ -5,7 +5,8 @@ import { StockScreener } from './StockScreener';
 import { AIAnalysisPanel } from './AIAnalysisPanel';
 import { NewsPanel } from './NewsPanel';
 import { TradingFilters } from './TradingFilters';
-import { Activity, TrendingUp, Brain, Newspaper, RefreshCcw } from 'lucide-react';
+import { TradingDisclaimer } from './TradingDisclaimer';
+import { Activity, TrendingUp, Brain, Newspaper, RefreshCcw, AlertTriangle } from 'lucide-react';
 import { useStockData } from '@/hooks/useStockData';
 import { useNewsData } from '@/hooks/useNewsData';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +28,7 @@ export const TradingDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <TradingDisclaimer />
       <header className="border-b border-border bg-card shadow-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -35,8 +37,8 @@ export const TradingDashboard = () => {
                 <Activity className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">AI Trading Hub</h1>
-                <p className="text-sm text-muted-foreground">Professional momentum trading platform</p>
+                <h1 className="text-2xl font-bold text-foreground">AI Trading Terminal</h1>
+                <p className="text-sm text-muted-foreground">Live market data • Real-time analysis • Professional trading</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -53,9 +55,13 @@ export const TradingDashboard = () => {
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span>Market Open</span>
+                  <span>Live Data</span>
                 </div>
-                <div>Last Updated: {new Date().toLocaleTimeString()}</div>
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-orange-500" />
+                  <span className="text-orange-600 dark:text-orange-400">High Risk</span>
+                </div>
+                <div>Updated: {new Date().toLocaleTimeString()}</div>
               </div>
             </div>
           </div>
